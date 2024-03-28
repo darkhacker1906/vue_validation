@@ -30,8 +30,32 @@
         />
         <ErrorMessage name="password" class="error" />
         </div>
-        <div class="btn"><button>Submit</button></div>
+        <div class="btn_div">
+          <v-btn
+            class="submit_btn"
+            variant="outlined"
+            elevated
+            type="submit"
+            style="
+              background-color: #008cba;
+              border: none;
+              color: white;
+              font-weight: bold;
+              width: 100%;
+            "
+          >
+            Submit
+            <div class="loader">
+              <v-progress-circular
+                v-if="loading"
+                indeterminate
+                color="white"
+              ></v-progress-circular>
+            </div>
+          </v-btn>
+        </div>
       </Form>
+      <div class="link_div">Already registered<router-link to="/">Log in</router-link></div>
     </div>
   </div>
 </template>
@@ -39,6 +63,8 @@
 <script>
 import { Form, Field, ErrorMessage } from "vee-validate";
 import * as yup from "yup";
+import {auth} from '../firebase'
+import { createUserWithEmailAndPassword } from 'firebase/auth';
 export default {
   name: "SignupPage",
   components: {
@@ -48,6 +74,7 @@ export default {
   },
   data() {
     return {
+        loading:false,
       schema: yup.object({
         email: yup.string().email().required(),
         name: yup.string().required(),
@@ -56,8 +83,16 @@ export default {
     };
   },
   methods:{
-    handleSubmit(values){
-        console.log(values);
+   async handleSubmit(values){
+      try{
+        this.loading=true;
+      await createUserWithEmailAndPassword(auth,values.email,values.password);
+        this.$router.push("/")
+      }catch(e){
+        console.warn(e);
+      }finally{
+        this.loading=false;
+      }
     }
   }
 };
@@ -77,15 +112,15 @@ h1 {
   width: 45%;
   margin: auto;
   background: #fff;
-  padding:20px;
+  padding:40px 20px;
   border-radius: 10px;
 }
 .form {
   width: 100%;
 }
-.btn {
-  display: flex;
-  justify-content: center;
+.btn_div{
+    width: 100%;
+    position: relative;
 }
 label{
     font-weight: 500;
@@ -97,16 +132,20 @@ label{
   height: 40px;
   padding: 0px 10px;
 }
-.btn {
-  background: rgb(136, 187, 231);
-  padding: 8px;
-  border-radius: 3px;
-}
 .error {
   color: red;
   font-style: italic;
   font-size: 13px;
   margin-bottom: 10px;
+}
+.loader{
+    position: absolute;
+}
+.link_div{
+    display: flex;
+    justify-content: flex-end;
+    gap:10px;
+    margin-top: 10px;
 }
 
 </style>
